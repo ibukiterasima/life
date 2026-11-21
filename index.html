@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f3ee">
+  <meta name="description" content="今日まで生きてきた日々を数えて、命の時間を感じる小さなサイトです。">
+  <title>今日まで、生きてきた。</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #292720;
+      --muted: #898579;
+      --accent: #a15e46;
+      --accent-dark: #7d4534;
+      --line: #e9e4da;
+      --paper: rgba(255, 254, 250, .88);
+      --bg: #f5f3ee;
+      --alert: #9a3d32;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100svh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.92) 0, rgba(255,255,255,0) 54%),
+        linear-gradient(145deg, #f5f2eb, #f8f6f0 55%, #f0eee7);
+    }
+    .topbar {
+      position: absolute;
+      inset: 0 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 21px clamp(18px, 5vw, 54px);
+      color: var(--muted);
+      font-size: .75rem;
+      letter-spacing: .04em;
+    }
+    .today { white-space: nowrap; }
+    .settings-button {
+      padding: 8px 0 8px 12px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      cursor: pointer;
+      transition: color .18s;
+    }
+    .settings-button:hover { color: var(--accent-dark); }
+    .settings-button:focus-visible, button:focus-visible { outline: 2px solid #bc8069; outline-offset: 4px; border-radius: 4px; }
+    main {
+      display: grid;
+      min-height: 100svh;
+      place-items: center;
+      padding: 88px 20px 48px;
+    }
+    .home { width: min(100%, 600px); text-align: center; }
+    .kicker {
+      margin: 0 0 20px;
+      color: var(--accent);
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .24em;
+    }
+    h1 {
+      margin: 0;
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      font-size: clamp(2rem, 7.5vw, 3.25rem);
+      font-weight: 500;
+      letter-spacing: .08em;
+      line-height: 1.5;
+    }
+    .subtitle { margin: 12px 0 39px; color: var(--muted); font-size: .88rem; letter-spacing: .045em; }
+    .count-wrap {
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 13px;
+      padding: 2px 10px 13px;
+      color: var(--accent-dark);
+      border-bottom: 1px solid #d9c7b9;
+    }
+    .count {
+      font-family: "Iowan Old Style", "Baskerville", "Times New Roman", serif;
+      font-size: clamp(5.5rem, 22vw, 9rem);
+      font-weight: 400;
+      letter-spacing: -.065em;
+      line-height: .95;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    .unit { font-size: 1.15rem; letter-spacing: .09em; }
+    .reflection {
+      max-width: 400px;
+      margin: 27px auto 0;
+      color: #625f56;
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      font-size: .98rem;
+      letter-spacing: .06em;
+      line-height: 2.1;
+    }
+    .since { margin: 24px 0 0; color: #969185; font-size: .75rem; letter-spacing: .03em; }
+    .initial-hint { margin: 27px 0 0; color: var(--muted); font-size: .86rem; }
+    .settings-button[hidden], .initial-hint[hidden], .count-wrap[hidden], .reflection[hidden], .since[hidden] { display: none; }
+
+    .dialog-backdrop {
+      position: fixed;
+      z-index: 2;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(40, 37, 30, .25);
+      backdrop-filter: blur(5px);
+    }
+    .dialog-backdrop[hidden] { display: none; }
+    .dialog {
+      width: min(100%, 430px);
+      padding: 31px clamp(22px, 7vw, 38px) 27px;
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: 18px;
+      background: #fffefa;
+      box-shadow: 0 24px 70px rgba(41, 38, 30, .17);
+      text-align: center;
+      animation: rise .22s ease-out;
+    }
+    .dialog h2 { margin: 0; font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; font-size: 1.42rem; font-weight: 500; letter-spacing: .08em; }
+    .dialog-copy { margin: 10px 0 24px; color: var(--muted); font-size: .82rem; line-height: 1.8; }
+    .date-fields { display: grid; grid-template-columns: 1.45fr 1fr 1fr; gap: 9px; text-align: left; }
+    .field { min-width: 0; }
+    .field input {
+      width: 100%;
+      height: 51px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      outline: none;
+      padding: 0 11px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: .98rem;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .field input:focus { border-color: #b27b65; box-shadow: 0 0 0 3px rgba(161, 94, 70, .12); }
+    .field input::placeholder { color: #b4afa4; }
+    .field small { display: block; margin: 6px 0 0 4px; color: var(--muted); font-size: .72rem; }
+    .message { min-height: 1.5em; margin: 11px 0 0; color: var(--alert); font-size: .8rem; line-height: 1.55; }
+    .message:empty { display: none; }
+    .actions { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 15px; }
+    .save-button {
+      min-width: 150px;
+      min-height: 46px;
+      padding: 0 22px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font: inherit;
+      font-size: .9rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      cursor: pointer;
+      transition: background .18s, transform .18s;
+    }
+    .save-button:hover { background: var(--accent-dark); }
+    .save-button:active { transform: translateY(1px); }
+    .cancel-button { padding: 10px 4px; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: .84rem; cursor: pointer; }
+    .privacy { margin: 17px 0 0; color: #a19c91; font-size: .7rem; }
+    @keyframes rise { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 480px) {
+      .topbar { padding: 16px 17px; }
+      main { padding: 77px 18px 35px; }
+      .subtitle { margin-bottom: 35px; }
+      .reflection { font-size: .9rem; }
+      .dialog { padding-top: 27px; }
+      .date-fields { gap: 7px; }
+      .field input { padding-inline: 8px; font-size: .92rem; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="today" id="today" aria-live="polite"></div>
+    <button class="settings-button" id="settings-button" type="button" hidden>日付設定</button>
+  </header>
+
+  <main>
+    <section class="home" aria-labelledby="title">
+      <p class="kicker">ここまで生きてきた日々</p>
+      <h1 id="title">今日まで、生きてきた。</h1>
+      <p class="subtitle" id="subtitle">あなたが今日まで重ねてきた時間</p>
+      <div class="count-wrap" id="count-wrap" hidden>
+        <span class="count" id="count"></span><span class="unit">日目</span>
+      </div>
+      <p class="reflection" id="reflection" hidden>今日まで、生きてこられた。<br>それだけで、かけがえのないこと。</p>
+      <p class="since" id="since" hidden></p>
+      <p class="initial-hint" id="initial-hint" hidden>まずは、あなたが生まれた日を教えてください。</p>
+    </section>
+  </main>
+
+  <div class="dialog-backdrop" id="dialog-backdrop" hidden>
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-copy">
+      <h2 id="dialog-title">生まれた日を設定</h2>
+      <p class="dialog-copy" id="dialog-copy">その日を1日目として、今日までの日々を数えます。</p>
+      <form id="date-form" novalidate>
+        <div class="date-fields">
+          <div class="field">
+            <input id="year" name="year" type="number" inputmode="numeric" placeholder="2000" min="1" max="9999" aria-label="年" required>
+            <small>年</small>
+          </div>
+          <div class="field">
+            <input id="month" name="month" type="number" inputmode="numeric" placeholder="1" min="1" max="12" aria-label="月" required>
+            <small>月</small>
+          </div>
+          <div class="field">
+            <input id="day" name="day" type="number" inputmode="numeric" placeholder="1" min="1" max="31" aria-label="日" required>
+            <small>日</small>
+          </div>
+        </div>
+        <p class="message" id="message" role="alert" aria-live="polite"></p>
+        <div class="actions">
+          <button class="save-button" type="submit">この日付で設定</button>
+          <button class="cancel-button" id="cancel-button" type="button" hidden>キャンセル</button>
+        </div>
+      </form>
+      <p class="privacy">日付はこのブラウザに保存されます。</p>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'ikite-kita-birth-date';
+      const todayElement = document.getElementById('today');
+      const settingsButton = document.getElementById('settings-button');
+      const countWrap = document.getElementById('count-wrap');
+      const countElement = document.getElementById('count');
+      const reflection = document.getElementById('reflection');
+      const since = document.getElementById('since');
+      const initialHint = document.getElementById('initial-hint');
+      const backdrop = document.getElementById('dialog-backdrop');
+      const dialogTitle = document.getElementById('dialog-title');
+      const dialogCopy = document.getElementById('dialog-copy');
+      const form = document.getElementById('date-form');
+      const yearInput = document.getElementById('year');
+      const monthInput = document.getElementById('month');
+      const dayInput = document.getElementById('day');
+      const message = document.getElementById('message');
+      const cancelButton = document.getElementById('cancel-button');
+      let savedDate = readSavedDate();
+      let editing = false;
+
+      function localTodayParts() {
+        const now = new Date();
+        return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
+      }
+
+      function formatDate(parts) {
+        return `${parts.year}年${parts.month}月${parts.day}日`;
+      }
+
+      function dayNumber(parts) {
+        // Use UTC only to serialize calendar dates; this avoids DST and timezone offset errors.
+        return Math.floor(Date.UTC(parts.year, parts.month - 1, parts.day) / 86400000);
+      }
+
+      function validDateParts(parts) {
+        if (!Number.isInteger(parts.year) || !Number.isInteger(parts.month) || !Number.isInteger(parts.day) ||
+            parts.year < 1 || parts.year > 9999 || parts.month < 1 || parts.month > 12 || parts.day < 1 || parts.day > 31) return false;
+        const date = new Date(parts.year, parts.month - 1, parts.day);
+        return date.getFullYear() === parts.year && date.getMonth() === parts.month - 1 && date.getDate() === parts.day;
+      }
+
+      function readSavedDate() {
+        try {
+          const value = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          if (value && validDateParts(value)) return value;
+        } catch (_) { /* Storage may be unavailable; the page still works for this visit. */ }
+        return null;
+      }
+
+      function render() {
+        const today = localTodayParts();
+        todayElement.textContent = `今日　${formatDate(today)}`;
+        if (!savedDate) {
+          countWrap.hidden = true;
+          reflection.hidden = true;
+          since.hidden = true;
+          initialHint.hidden = false;
+          settingsButton.hidden = true;
+          openDialog(false);
+          return;
+        }
+        const days = dayNumber(today) - dayNumber(savedDate) + 1;
+        countElement.textContent = days.toLocaleString('ja-JP');
+        since.textContent = `${formatDate(savedDate)}から、今日まで。`;
+        countWrap.hidden = false;
+        reflection.hidden = false;
+        since.hidden = false;
+        initialHint.hidden = true;
+        settingsButton.hidden = false;
+      }
+
+      function openDialog(isEditing) {
+        editing = isEditing;
+        message.textContent = '';
+        dialogTitle.textContent = isEditing ? '日付設定' : '生まれた日を設定';
+        dialogCopy.textContent = isEditing
+          ? '設定した日付を変更できます。'
+          : 'その日を1日目として、今日までの日々を数えます。';
+        cancelButton.hidden = !isEditing;
+        if (savedDate) {
+          yearInput.value = savedDate.year;
+          monthInput.value = savedDate.month;
+          dayInput.value = savedDate.day;
+        } else {
+          yearInput.value = '';
+          monthInput.value = '';
+          dayInput.value = '';
+        }
+        backdrop.hidden = false;
+        window.setTimeout(() => yearInput.focus(), 0);
+      }
+
+      settingsButton.addEventListener('click', () => openDialog(true));
+      cancelButton.addEventListener('click', () => { backdrop.hidden = true; });
+      backdrop.addEventListener('click', (event) => {
+        if (event.target === backdrop && editing) backdrop.hidden = true;
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && editing && !backdrop.hidden) backdrop.hidden = true;
+      });
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        message.textContent = '';
+        const date = { year: Number(yearInput.value), month: Number(monthInput.value), day: Number(dayInput.value) };
+        if (!yearInput.value || !monthInput.value || !dayInput.value) {
+          message.textContent = '年・月・日をすべて入力してください。';
+          return;
+        }
+        if (!validDateParts(date)) {
+          message.textContent = 'その日付は存在しません。月末やうるう年をご確認ください。';
+          return;
+        }
+        if (dayNumber(date) > dayNumber(localTodayParts())) {
+          message.textContent = '未来の日付は設定できません。今日までの日付を入力してください。';
+          return;
+        }
+        savedDate = date;
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(savedDate)); } catch (_) { /* Continue for this visit if storage is blocked. */ }
+        backdrop.hidden = true;
+        render();
+      });
+
+      render();
+      window.setInterval(render, 60 * 1000);
+    })();
+  </script>
+</body>
+</html>
