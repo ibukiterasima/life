@@ -5,15 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f3ee">
   <meta name="description" content="今日まで生きてきた日々を数えて、命の時間を感じる小さなサイトです。">
-  <title>今日まで、生きてきた。</title>
+  <title>今日も生きてるー！</title>
   <style>
     :root {
       color-scheme: light;
-      --ink: #292720;
-      --muted: #898579;
-      --accent: #a15e46;
-      --accent-dark: #7d4534;
-      --line: #e9e4da;
+      --ink: #302723;
+      --muted: #897a73;
+      --accent: #b66b56;
+      --accent-dark: #98513f;
+      --party-pink: #e87891;
+      --party-gold: #e8b84f;
+      --party-blue: #71b8cb;
+      --party-lilac: #a994d4;
+      --line: #eee0d8;
       --paper: rgba(255, 254, 250, .88);
       --bg: #f5f3ee;
       --alert: #9a3d32;
@@ -27,8 +31,44 @@
       margin: 0;
       color: var(--ink);
       background:
-        radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.92) 0, rgba(255,255,255,0) 54%),
-        linear-gradient(145deg, #f5f2eb, #f8f6f0 55%, #f0eee7);
+        radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.96) 0, rgba(255,255,255,0) 55%),
+        radial-gradient(ellipse at 50% 52%, rgba(246, 222, 204, .24) 0, rgba(246, 222, 204, 0) 48%),
+        linear-gradient(145deg, #faf2e9, #fbf8f1 55%, #f5eee6);
+    }
+    .confetti { position: fixed; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; }
+    .topbar, main { position: relative; z-index: 1; }
+    .balloon {
+      position: absolute;
+      width: 42px;
+      height: 54px;
+      border-radius: 52% 48% 48% 52% / 58% 58% 42% 42%;
+      background: radial-gradient(ellipse at 30% 24%, rgba(255,255,255,.82) 0 5%, transparent 22%), var(--balloon-color);
+      box-shadow: inset -5px -7px 12px rgba(80, 48, 42, .12), 0 6px 18px rgba(91, 69, 57, .08);
+      opacity: .83;
+      animation: balloon-bob var(--bob-time) ease-in-out var(--bob-delay) infinite alternate;
+    }
+    .balloon::before { content: ""; position: absolute; left: 19px; bottom: -5px; border: 4px solid transparent; border-top: 7px solid var(--balloon-color); }
+    .balloon::after { content: ""; position: absolute; top: calc(100% + 2px); left: 20px; width: 1px; height: 96px; background: rgba(141, 112, 97, .45); transform-origin: top; transform: rotate(5deg); }
+    .balloon-a { top: 27%; left: 7%; --balloon-color: #ef9cac; --bob-time: 3.8s; --bob-delay: -.9s; }
+    .balloon-b { top: 48%; right: 7%; width: 35px; height: 46px; --balloon-color: #f4cb72; --bob-time: 4.4s; --bob-delay: -2s; }
+    .balloon-c { top: 68%; left: 12%; width: 32px; height: 42px; --balloon-color: #8dc5d2; --bob-time: 4.1s; --bob-delay: -1.5s; }
+    .balloon-d { top: 18%; right: 13%; width: 31px; height: 41px; --balloon-color: #b5a2d9; --bob-time: 3.5s; --bob-delay: -2.7s; }
+    .burst { position: absolute; width: 130px; aspect-ratio: 1; opacity: 0; animation: firework 4.8s ease-out var(--burst-delay) infinite; }
+    .burst::before, .burst::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(from 0deg, var(--burst-color) 0deg 2deg, transparent 2deg 22.5deg); mask: radial-gradient(circle, transparent 0 29%, #000 31% 36%, transparent 38%); }
+    .burst::after { transform: rotate(11deg) scale(.72); opacity: .72; }
+    .burst-a { top: 17%; left: 23%; --burst-color: #e8b84f; --burst-delay: -1s; }
+    .burst-b { right: 18%; bottom: 16%; width: 105px; --burst-color: #e87891; --burst-delay: -3.2s; }
+    .confetti-piece {
+      position: absolute;
+      top: -24px;
+      left: var(--x);
+      width: var(--w);
+      height: var(--h);
+      border-radius: 2px;
+      background: var(--color);
+      opacity: .82;
+      transform: rotate(var(--rotate));
+      animation: confetti-fall var(--duration) linear var(--delay) infinite;
     }
     .topbar {
       position: absolute;
@@ -82,9 +122,22 @@
       justify-content: center;
       gap: 13px;
       padding: 2px 10px 13px;
-      color: var(--accent-dark);
-      border-bottom: 1px solid #d9c7b9;
+      color: #9a5141;
+      position: relative;
+      border-bottom: 2px solid #e8c6b2;
+      text-shadow: 0 4px 35px rgba(230, 175, 91, .24);
     }
+    .count-wrap::before, .count-wrap::after {
+      position: absolute;
+      color: #d9a36d;
+      font-family: Georgia, serif;
+      font-size: 1.15rem;
+      line-height: 1;
+      pointer-events: none;
+      animation: shimmer 3.2s ease-in-out infinite;
+    }
+    .count-wrap::before { content: "✦"; top: 12%; left: -34px; color: var(--party-gold); }
+    .count-wrap::after { content: "✧"; right: -31px; bottom: 22%; color: var(--party-lilac); font-size: .95rem; animation-delay: 1.1s; }
     .count {
       font-family: "Iowan Old Style", "Baskerville", "Times New Roman", serif;
       font-size: clamp(5.5rem, 22vw, 9rem);
@@ -92,12 +145,16 @@
       letter-spacing: -.065em;
       line-height: .95;
       font-variant-numeric: lining-nums tabular-nums;
+      background: linear-gradient(135deg, #a94f4c 10%, #d1844f 46%, #b16981 82%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
     .unit { font-size: 1.15rem; letter-spacing: .09em; }
     .reflection {
       max-width: 400px;
       margin: 27px auto 0;
-      color: #625f56;
+      color: #725047;
       font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
       font-size: .98rem;
       letter-spacing: .06em;
@@ -106,6 +163,14 @@
     .since { margin: 24px 0 0; color: #969185; font-size: .75rem; letter-spacing: .03em; }
     .initial-hint { margin: 27px 0 0; color: var(--muted); font-size: .86rem; }
     .settings-button[hidden], .initial-hint[hidden], .count-wrap[hidden], .reflection[hidden], .since[hidden] { display: none; }
+    .reflection { font-weight: 600; }
+    @keyframes shimmer { 0%, 100% { opacity: .55; transform: scale(.92) rotate(-8deg); } 50% { opacity: 1; transform: scale(1.12) rotate(8deg); } }
+    @keyframes confetti-fall {
+      0% { transform: translate3d(0, -5vh, 0) rotate(var(--rotate)); }
+      100% { transform: translate3d(var(--sway), 112vh, 0) rotate(calc(var(--rotate) + 520deg)); }
+    }
+    @keyframes balloon-bob { from { transform: translate(0, 5px) rotate(-5deg); } to { transform: translate(7px, -13px) rotate(5deg); } }
+    @keyframes firework { 0%, 20% { opacity: 0; transform: scale(.25) rotate(-8deg); } 34% { opacity: .48; transform: scale(1) rotate(8deg); } 57%, 100% { opacity: 0; transform: scale(1.22) rotate(17deg); } }
 
     .dialog-backdrop {
       position: fixed;
@@ -176,6 +241,12 @@
       main { padding: 77px 18px 35px; }
       .subtitle { margin-bottom: 35px; }
       .reflection { font-size: .9rem; }
+      .balloon-a { left: 3%; top: 22%; }
+      .balloon-b { right: 3%; }
+      .balloon-c { left: 6%; }
+      .balloon-d { right: 7%; top: 14%; }
+      .burst-a { left: 4%; }
+      .burst-b { right: 3%; bottom: 11%; }
       .dialog { padding-top: 27px; }
       .date-fields { gap: 7px; }
       .field input { padding-inline: 8px; font-size: .92rem; }
@@ -184,6 +255,11 @@
   </style>
 </head>
 <body>
+  <div class="confetti" id="confetti" aria-hidden="true">
+    <span class="balloon balloon-a"></span><span class="balloon balloon-b"></span>
+    <span class="balloon balloon-c"></span><span class="balloon balloon-d"></span>
+    <span class="burst burst-a"></span><span class="burst burst-b"></span>
+  </div>
   <header class="topbar">
     <div class="today" id="today" aria-live="polite"></div>
     <button class="settings-button" id="settings-button" type="button" hidden>日付設定</button>
@@ -191,13 +267,13 @@
 
   <main>
     <section class="home" aria-labelledby="title">
-      <p class="kicker">ここまで生きてきた日々</p>
-      <h1 id="title">今日まで、生きてきた。</h1>
-      <p class="subtitle" id="subtitle">あなたが今日まで重ねてきた時間</p>
+      <p class="kicker">✦　今日まで生きてきたあなたへ　✦</p>
+      <h1 id="title">今日も生きてるー！</h1>
+      <p class="subtitle" id="subtitle">今日は、あなたが生きてきた日々を盛大にお祝い。</p>
       <div class="count-wrap" id="count-wrap" hidden>
         <span class="count" id="count"></span><span class="unit">日目</span>
       </div>
-      <p class="reflection" id="reflection" hidden>今日まで、生きてこられた。<br>それだけで、かけがえのないこと。</p>
+      <p class="reflection" id="reflection" hidden>生まれてきてくれて、今日まで来てくれて、ありがとう！<br>あなたの毎日に、心からの拍手と花束を。</p>
       <p class="since" id="since" hidden></p>
       <p class="initial-hint" id="initial-hint" hidden>まずは、あなたが生まれた日を教えてください。</p>
     </section>
@@ -251,8 +327,24 @@
       const dayInput = document.getElementById('day');
       const message = document.getElementById('message');
       const cancelButton = document.getElementById('cancel-button');
+      const confetti = document.getElementById('confetti');
       let savedDate = readSavedDate();
       let editing = false;
+
+      const confettiColors = ['#e87891', '#e8b84f', '#71b8cb', '#a994d4', '#83b887', '#f19a58'];
+      for (let i = 0; i < 96; i += 1) {
+        const piece = document.createElement('span');
+        piece.className = 'confetti-piece';
+        piece.style.setProperty('--x', `${(i * 47 + 13) % 100}%`);
+        piece.style.setProperty('--w', `${5 + (i % 4) * 2}px`);
+        piece.style.setProperty('--h', `${8 + (i % 5) * 3}px`);
+        piece.style.setProperty('--color', confettiColors[i % confettiColors.length]);
+        piece.style.setProperty('--rotate', `${(i * 37) % 180}deg`);
+        piece.style.setProperty('--duration', `${8 + (i % 8) * 1.2}s`);
+        piece.style.setProperty('--delay', `${-(i % 13) * 1.2}s`);
+        piece.style.setProperty('--sway', `${((i * 29) % 100) - 50}px`);
+        confetti.appendChild(piece);
+      }
 
       function localTodayParts() {
         const now = new Date();
